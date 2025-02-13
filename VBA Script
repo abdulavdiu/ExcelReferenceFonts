@@ -1,0 +1,45 @@
+Sub colorCodeCells()
+    Dim selRng As Range
+    Dim cell As Range
+    Dim ws As Worksheet
+    Dim answer As VbMsgBoxResult
+
+    'Set the active worksheet
+    Set ws = ActiveSheet
+
+    'Check if a range is selected
+    On Error Resume Next
+    Set selRng = Selection
+    On Error GoTo 0
+'if theres no range selected user may want to format entire sheet
+    If selRng Is Nothing Or Selection.Cells.Count = 1 And IsEmpty(Selection) Then
+        'Ask if I want to format the entire sheet
+        answer = MsgBox("No range selected. Do you want to apply formatting to the entire sheet?", vbYesNo + vbQuestion, "Apply to Entire Sheet")
+        If answer = vbYes Then
+            Set selRng = ws.UsedRange
+        Else
+            MsgBox "No range selected. Script ended.", vbInformation, "Operation Cancelled"
+            Exit Sub
+        End If
+    End If
+
+    'Loop through each cell in the range
+    Application.ScreenUpdating = False
+    For Each cell In selRng
+        If Not IsEmpty(cell) Then
+            If cell.HasFormula Then
+                'Check if the formula does not refer to another sheet
+                If InStr(1, cell.Formula, "!") = 0 Then
+                    cell.Font.Color = vbBlack 'Black for formulas referring to the same sheet
+                Else 'if it does refer to another sheet:
+                    cell.Font.Color = RGB(0, 128, 0) 'Use darker Green for formulas referring to other sheets (vb green is light)
+                End If
+            Else  'If no formula:
+                cell.Font.Color = vbBlue ' Blue for cells with inputs
+            End If
+        End If
+    Next cell
+    Application.ScreenUpdating = True
+
+    MsgBox "Font color formatting applied successfully!", vbInformation, "Done"
+End Sub
